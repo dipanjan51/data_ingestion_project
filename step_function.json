@@ -1,0 +1,84 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "StartCrawler",
+  "States": {
+    "StartCrawler": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "flights-data-crawler"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "GetCrawler"
+    },
+    "GetCrawler": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "flights-data-crawler"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:getCrawler",
+      "Next": "Is_Running"
+    },
+    "Is_Running": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Next": "Wait",
+          "Variable": "$.Crawler.State",
+          "StringEquals": "RUNNING"
+        }
+      ],
+      "Default": "Glue StartJobRun"
+    },
+    "Wait": {
+      "Type": "Wait",
+      "Seconds": 5,
+      "Next": "GetCrawler"
+    },
+    "Glue StartJobRun": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "flight_data_ingestion"
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "Next": "Failed Notification"
+        }
+      ],
+      "Next": "Glue_Job_Status"
+    },
+    "Glue_Job_Status": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Next": "Success Notification",
+          "Variable": "$.JobRunState",
+          "StringEquals": "SUCCEEDED"
+        }
+      ],
+      "Default": "Failed Notification"
+    },
+    "Success Notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "Message.$": "$",
+        "TopicArn": "arn:aws:sns:ap-south-1:111349184842:flight-etl-glue-job-topic"
+      },
+      "End": true
+    },
+    "Failed Notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "Message.$": "$",
+        "TopicArn": "arn:aws:sns:ap-south-1:111349184842:flight-etl-glue-job-topic"
+      },
+      "End": true
+    }
+  },
+  "QueryLanguage": "JSONPath"
+}
