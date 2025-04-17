@@ -67,4 +67,5 @@ We can check the data in the dimension and fact table which have been populated 
 ## Visualisation:
 https://app.powerbi.com/view?r=eyJrIjoiYjE3NTVkOGMtMDJmZi00MmY4LTkzNTYtOWZhZmNhYjQ4YTQ5IiwidCI6IjMyNWI1NDE5LTM2NmUtNGUxZS1hZTAyLWNjNWIzZDk1ZDk5MiJ9
 
+![image](https://github.com/user-attachments/assets/32df47df-be98-4f1a-a7be-31963ec75653)
 
