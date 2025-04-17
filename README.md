@@ -21,7 +21,48 @@ The goal of this project is to analyze domestic airline flight patterns to deriv
 ![architecture](https://github.com/dipanjan51/data_ingestion_project/blob/main/Glue%20Pipeline.png?raw=true)
 
 ## Step Functions Execution:
-![architecture](https://github.com/dipanjan51/data_ingestion_project/blob/main/orchestration%20outcome.png?raw=true)
+![stepfunctions](https://github.com/dipanjan51/data_ingestion_project/blob/main/orchestration%20outcome.png?raw=true)
+
+---
+## Walkthrough:
+### 1. Schema and Buckets
+As S3 bucket is created with objects to store airports details and fight details separately.
+![image](https://github.com/dipanjan51/data_ingestion_project/blob/main/buckets.png)
+
+"airlines" schema is created in Redshift, alongwith two tables based on the required structure:
+- airports_dim: Dimension table for airport details
+- daily_flights_fact: Fact table for storing flight details from source to destination
+
+airports_dim table is populated with the data from airports.csv file since its structured perfectly for dimension table
+
+![image](https://github.com/dipanjan51/data_ingestion_project/blob/main/redshift%20schema.png)
+
+### 2. Glue Crawler Config:
+Glue Crawlers are configured to automatically extract the schema of the target databases, and to discover and catalog the raw flights data stored in the S3 bucket, thereby creating three Data Catalog tables.
+
+![image](https://github.com/dipanjan51/data_ingestion_project/blob/main/crawlers.png)
+
+![image](https://github.com/dipanjan51/data_ingestion_project/blob/main/catalog%20tables.png)
+
+### 3. Glue ETL job:
+An ETL process is developed using Glue to transform the raw flights data into a structured format.
+This includes extracting essential fields like airport carrier, origin airport, destination airport, source and destination city, state, origin delay, and arrival delay.
+
+### 4. Step Functions Orchestration:
+The entire workflow is orchestrated using Step Functions which automates the trigger of Crawlers, Glue Job, sending notifications via SNS upon completion of flow.
+
+![image](https://github.com/dipanjan51/data_ingestion_project/blob/main/orchestration%20outcome.png)
+
+### 5. Event Bridge trigger rule:
+An Event Bridge rule is set which triggers the Step Functions State Machine upon creation of an S3 object.
+
+![image](https://github.com/dipanjan51/data_ingestion_project/blob/main/event%20bridge.png)
+
+### 6. Output:
+We can check the data in the dimension and fact table which have been populated upon creation of the process:
+
+![image](https://github.com/dipanjan51/data_ingestion_project/blob/main/dim%20table.png)
+![image](https://github.com/dipanjan51/data_ingestion_project/blob/main/facttable.png)
 
 ## Visualisation:
 https://app.powerbi.com/view?r=eyJrIjoiYjE3NTVkOGMtMDJmZi00MmY4LTkzNTYtOWZhZmNhYjQ4YTQ5IiwidCI6IjMyNWI1NDE5LTM2NmUtNGUxZS1hZTAyLWNjNWIzZDk1ZDk5MiJ9
